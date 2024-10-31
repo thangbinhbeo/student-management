@@ -1,11 +1,13 @@
 package com.example.pe;
 
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -17,6 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -25,42 +28,56 @@ import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap gMap;
+    String address;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-        if (mapFragment != null) {
+        if (savedInstanceState == null) {
+            SupportMapFragment mapFragment = new SupportMapFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.map, mapFragment)
+                    .commit();
             mapFragment.getMapAsync(this);
-        } else {
-            Log.e("MapActivity", "MapFragment is null");
         }
+        Intent intent = getIntent();
+        address = intent.getStringExtra("Address");
 
         Button buttonBack = findViewById(R.id.Back);
         buttonBack.setOnClickListener(view -> finish());
     }
 
-    private void findLocation(String address) {
-        Geocoder geocoder = new Geocoder(this);
+    private void searchLocation(String locationName) {
+        Geocoder geocoder = new Geocoder(MapActivity.this);
+        List<Address> addressList = null;
         try {
-            List<Address> addresses = geocoder.getFromLocationName(address, 1);
-            if (addresses != null && !addresses.isEmpty()) {
-                Address location = addresses.get(0);
-                LatLng latLng = new LatLng(10.7769, 106.6951);
-                if (gMap != null) {
-                    gMap.addMarker(new MarkerOptions().position(latLng).title("Địa chỉ: " + address));
-                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-                } else {
-                    Log.e("MapActivity", "GoogleMap is not initialized.");
-                }
-            }
+            addressList = geocoder.getFromLocationName(locationName, 1);
         } catch (IOException e) {
             e.printStackTrace();
+            Toast.makeText(MapActivity.this, "Error retrieving location", Toast.LENGTH_SHORT).show();
+        }
+
+        if (addressList != null && !addressList.isEmpty()) {
+            Address selectedAddress = addressList.get(0);
+            LatLng selectedLocation = new LatLng(selectedAddress.getLatitude(), selectedAddress.getLongitude());
+            putRedMarkerAndMoveCamera(selectedLocation, selectedAddress.getAddressLine(0));
+        } else {
+            Toast.makeText(MapActivity.this, "Location not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void putRedMarkerAndMoveCamera(LatLng latLng, String title) {
+        if (gMap  != null) {
+            gMap.clear(); // Clear previous markers
+            gMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .title(title)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+            gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15), 2000, null);
+        } else {
+            Log.e("MapsActivity", "myMap is null when trying to put marker");
         }
     }
 
@@ -71,7 +88,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Call findLocation here, after gMap is initialized
         if (address != null) {
-            findLocation(address);
+            searchLocation(address);
         }
     }
 }

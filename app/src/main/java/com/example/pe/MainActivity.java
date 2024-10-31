@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private StudentAdapter studentAdapter;
     private List<Student> studentList = new ArrayList<>();
     private Map<Integer, String> majorMap = new HashMap<>();;
-    private Button buttonAddStudent, buttonAddMajor, buttonLoginGoogle, buttonLogOut, buttonMap;
+    private Button buttonAddStudent, buttonAddMajor, buttonLoginGoogle, buttonLogOut;
 
     private GoogleSignInClient googleSignInClient;
     private static final int RC_SIGN_IN = 1000;
@@ -75,13 +75,6 @@ public class MainActivity extends AppCompatActivity {
         buttonAddMajor = findViewById(R.id.buttonAddMajor);
         buttonLoginGoogle = findViewById(R.id.buttonLoginGoogle);
         buttonLogOut = findViewById(R.id.buttonLogOut);
-        buttonMap = findViewById(R.id.buttonMap);
-
-        buttonMap.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, MapActivity.class);
-            startActivity(intent);
-            finish();
-        });
 
         buttonAddStudent.setOnClickListener(new View.OnClickListener() {
             @Override

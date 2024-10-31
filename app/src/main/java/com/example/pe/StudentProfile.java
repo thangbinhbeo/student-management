@@ -81,7 +81,7 @@ public class StudentProfile extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(StudentProfile.this, MapActivity.class);
-                intent.putExtra("address", student.getAddress());
+                intent.putExtra("Address", student.getAddress());
                 startActivity(intent);
             }
         });
